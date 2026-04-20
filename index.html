@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nicotine Styles Emulation</title>
+    <style>
+        /* Your Custom CSS */
+        body { 
+            background-color: #0a0a0a; 
+            color: white; 
+            margin: 0; 
+            overflow-x: hidden;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            cursor: none; /* Hide default cursor */
+        }
+
+        .letter-spacing-custom { letter-spacing: -0.06em; }
+
+        /* Custom dot cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+        .cursor-dot {
+            width: 100%;
+            height: 100%;
+            background: #545eb6;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(84, 94, 182, 0.8), 0 0 20px rgba(84, 94, 182, 0.4);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .cursor-dot.hovering {
+            transform: scale(2.2);
+            box-shadow: 0 0 16px rgba(84, 94, 182, 1), 0 0 30px rgba(84, 94, 182, 0.6);
+            background: rgba(84, 94, 182, 0.7);
+        }
+
+        a, button, input, label { cursor: none; }
+
+        /* Falling text */
+        .falling-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .falling-word {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.07);
+            font-weight: 700;
+            white-space: nowrap;
+            user-select: none;
+            text-shadow: 0 0 10px rgba(84, 94, 182, 0.2);
+            animation: fall linear forwards;
+            will-change: transform;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-120px) rotate(0deg); opacity: 0.4; }
+            15% { opacity: 0.85; }
+            85% { opacity: 0.85; }
+            100% { transform: translateY(calc(100vh + 150px)) rotate(var(--rotate)); opacity: 0; }
+        }
+
+        /* Modal overlay */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: #171717;
+            border: 1px solid rgba(84,94,182,0.3);
+            border-radius: 24px;
+            padding: 48px 40px;
+            max-width: 460px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
+
+        /* Tailwind Emulation Classes */
+        .btn-primary {
+            background: #545eb6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover { background: #4752C4; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div class="custom-cursor" id="cursor">
+        <div class="cursor-dot" id="dot"></div>
+    </div>
+
+    <div class="falling-container" id="falling-words"></div>
+
+    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10;">
+        <h1 class="letter-spacing-custom" style="font-size: 4rem; font-weight: 900; margin-bottom: 20px;">NICOTINE</h1>
+        <button class="btn-primary" onclick="toggleModal()">View Purchase Success</button>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <h2 style="color: #545eb6; margin-bottom: 15px;">Transaction Complete</h2>
+            <p style="color: #9ca3af; margin-bottom: 25px;">Thank you for your purchase. Your download is now ready.</p>
+            <button class="btn-primary" onclick="toggleModal()">Close Window</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. Cursor Logic
+        const cursor = document.getElementById('cursor');
+        const dot = document.getElementById('dot');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('a, button').forEach(el => {
+            el.addEventListener('mouseenter', () => dot.classList.add('hovering'));
+            el.addEventListener('mouseleave', () => dot.classList.remove('hovering'));
+        });
+
+        // 2. Falling Words Logic
+        const container = document.getElementById('falling-words');
+        const words = ['NICOTINE', 'CLIENT', 'SUCCESS', 'BOUGHT', 'SECURE'];
+
+        function createWord() {
+            const el = document.createElement('div');
+            el.className = 'falling-word';
+            el.innerText = words[Math.floor(Math.random() * words.length)];
+            
+            const startX = Math.random() * window.innerWidth;
+            const duration = 5 + Math.random() * 10;
+            const rotation = Math.random() * 360;
+            const size = 12 + Math.random() * 24;
+
+            el.style.left = startX + 'px';
+            el.style.fontSize = size + 'px';
+            el.style.animationDuration = duration + 's';
+            el.style.setProperty('--rotate', rotation + 'deg');
+
+            container.appendChild(el);
+
+            setTimeout(() => el.remove(), duration * 1000);
+        }
+
+        setInterval(createWord, 300);
+
+        // 3. Modal Logic
+        function toggleModal() {
+            document.getElementById('modal').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
